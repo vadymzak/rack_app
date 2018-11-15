@@ -9,13 +9,16 @@ class MyRackMiddleware
   end
 
   def call(env)
+    @env = env
     request(env)
-    status, headers, body = @appl.call(env) # we now call the inner application
-    get_header
+    #p @env
+
+    status, @headers, body = @appl.call(env) # we now call the inner application
+    p @headers
     get_token(@request.GET)
     append_s = check_token
     status = 401 if append_s == "Token not valid"
-    [status, headers, body << append_s.to_s]
+    [status, @headers, body << append_s.to_s]
   end
 
   def request(env)
