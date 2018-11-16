@@ -34,7 +34,7 @@ class MyRackMiddleware
     end
   end
 
-  private
+  #private
 
   def check_token?
     bearer_token
