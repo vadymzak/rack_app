@@ -7,13 +7,18 @@ GEM
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
+    rack (2.0.6)
+    rack-test (1.1.0)
+      rack (>= 1.0, < 3)
 
 PLATFORMS
   ruby
+  x86-mingw32
 
 DEPENDENCIES
   jwt
   pry
+  rack-test
 
 BUNDLED WITH
    1.17.1
