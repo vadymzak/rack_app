@@ -3,6 +3,8 @@ require 'pry'
 class MyRackMiddleware
   attr_reader :request
 
+  HMAC_KEY = "#{ENV["HMAC_KEY"]}"
+
   def initialize(appl)
     @appl = appl
     @token
@@ -43,7 +45,8 @@ class MyRackMiddleware
   end
 
   def get_key
-    key = 'my$ecretK3y'
+    #key = 'my$ecretK3y'
+    key = HMAC_KEY
   end
 
   def authorization_header
