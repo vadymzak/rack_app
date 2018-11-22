@@ -8,6 +8,9 @@ class MyRackMiddleware
   def initialize(appl)
     @appl = appl
     @token
+    @algorithm 
+    gen_rs256_keys
+    gen_token_rs256
   end
 
   def call(env)
@@ -18,6 +21,8 @@ class MyRackMiddleware
     @append_s = set_body(status)
     [status, headers, body << @append_s.to_s]
   end
+
+  private
 
   def request(env)
     @request = Rack::Request.new(env)
@@ -36,17 +41,20 @@ class MyRackMiddleware
     end
   end
 
-  #private
-
   def check_token?
     bearer_token
-    @check = Check.new(@bearer_token.to_s, get_key)
-    @check.decode_HS256
+    set_algorithm
+    @check = Object.const_get("Algorithm::#{@algorithm.capitalize}").new(@bearer_token.to_s, get_key)
+    @check.check_decode
   end
 
   def get_key
-    #key = 'my$ecretK3y'
-    key = HMAC_KEY
+    #key = HMAC_KEY
+    if @algorithm == 'HS256'
+      return key = 'my$ecretK3y'
+    elsif @algorithm == 'RS256'
+      return key = @rsa_public
+    end
   end
 
   def authorization_header
@@ -61,4 +69,22 @@ class MyRackMiddleware
     check_status?() ? 200 : 401
   end
 
+  def set_algorithm
+    @algorithm = nil
+    @algorithm ||= algorithm_header || 'HS256'
+  end
+
+  def algorithm_header
+    @env['HTTP_ALGORITHM']
+  end
+
+  def gen_rs256_keys
+    @rsa_private = OpenSSL::PKey::RSA.generate 2048
+    @rsa_public = @rsa_private.public_key
+  end
+
+  def gen_token_rs256
+    payload = { login: 'test_user' }
+    token = JWT.encode payload, @rsa_private, 'RS256'
+  end
 end

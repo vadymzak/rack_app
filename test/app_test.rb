@@ -1,6 +1,6 @@
 require_relative "../app/my_app"
 require_relative "../app/myrackmiddleware"
-require_relative "../app/check"
+require_relative "../app/algorithm/hs256"
 require 'pry'
 
 require "test/unit"

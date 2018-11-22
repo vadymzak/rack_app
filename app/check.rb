@@ -1,21 +1,11 @@
 require 'jwt'
 
-class Check
-  attr_reader :decode
+  class Check
 
-  def initialize(token, key)
-    @token = token
-    @hmac_secret = key
-    @decode
-  end
-
-  def decode_HS256
-    begin
-      @decode = JWT.decode @token, @hmac_secret, true, { algorithm: 'HS256' }
-      true
-    rescue JWT::ExpiredSignature, JWT::VerificationError, JWT::DecodeError
-      false
+    def initialize(token, key)
+      @token = token
+      @key = key
+      @decode
     end
-  end
 
 end
