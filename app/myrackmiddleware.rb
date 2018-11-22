@@ -8,7 +8,7 @@ class MyRackMiddleware
   def initialize(appl)
     @appl = appl
     @token
-    @algorithm 
+    @algorithm
     gen_rs256_keys
     gen_token_rs256
   end
@@ -42,9 +42,8 @@ class MyRackMiddleware
   end
 
   def check_token?
-    bearer_token
     set_algorithm
-    @check = Object.const_get("Algorithm::#{@algorithm.capitalize}").new(@bearer_token.to_s, get_key)
+    @check = Object.const_get("Algorithm::#{@algorithm.capitalize}").new(token, get_key)
     @check.check_decode
   end
 
@@ -58,7 +57,7 @@ class MyRackMiddleware
   end
 
   def authorization_header
-    @env['HTTP_TOKEN']
+    @env['HTTP_AUTHORIZATION']
   end
 
   def check_status?
@@ -67,6 +66,11 @@ class MyRackMiddleware
 
   def set_status
     check_status?() ? 200 : 401
+  end
+
+  def token
+    pattern = /^Bearer /
+    bearer_token.gsub(pattern, '') if bearer_token&.match(pattern)
   end
 
   def set_algorithm
