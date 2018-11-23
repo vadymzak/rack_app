@@ -13,37 +13,42 @@ class HomepageTest < Test::Unit::TestCase
     MyRackMiddleware.new(MyApp.new)
   end
 
-  def test_without_token
+  def test_hmac_key_present_in_env
+    hmac_key = "#{ENV["HMAC_KEY"]}"
+    assert_equal hmac_key, "my$ecretK3y"
+  end
+  
+  def test_status_401_with_without_token
     get "/"
 
-    assert last_response.status == 401
+    assert_equal last_response.status, 401
   end
 
-  def test_not_valid_token
+  def test_status_401_with_not_valid_token
     get "/?token=sdfsdfszg"
 
-    assert last_response.status == 401
+    assert_equal last_response.status, 401
   end
 
-  def test_valid_token
+  def test_status_200_with_valid_token
     hmac_secret = 'my$ecretK3y'
     payload = { data: 'test' }
     @valid = JWT.encode payload, hmac_secret, 'HS256'
 
-    get "/?token=#{@valid}"
+    get "/?token=Bearer #{@valid}"
 
-    assert last_response.status == 200
+    assert_equal last_response.status, 200
   end
 
-  def test_valid_token_in_header
+  def test_status_200_with_valid_token_in_header
     hmac_secret = 'my$ecretK3y'
     payload = { data: 'test' }
     @valid = JWT.encode payload, hmac_secret, 'HS256'
 
-    header 'token', @valid
+    header 'AUTHORIZATION', "Bearer #{@valid}"
     get "/"
 
-    assert last_response.status == 200
+    assert_equal last_response.status, 200
   end
 
 end

@@ -10,7 +10,7 @@ class MyRackMiddleware
     @token
     @algorithm
     gen_rs256_keys
-    p gen_token_rs256
+    gen_token_rs256
   end
 
   def call(env)
@@ -18,8 +18,9 @@ class MyRackMiddleware
     request(env)
     status, headers, body = @appl.call(env) # we now call the inner application
     status = set_status
+    @append_h = " "
     @append_s = set_body(status)
-    [status, headers, body << @append_s.to_s]
+    [status, headers , body << @append_s.to_s]
   end
 
   private
@@ -42,15 +43,16 @@ class MyRackMiddleware
   end
 
   def check_token?
-    set_algorithm
-    @check = Object.const_get("Algorithm::#{@algorithm.capitalize}").new(token, get_key)
+    if token == nil
+      return false
+    end
+    @check = Object.const_get("Algorithm::#{set_algorithm.capitalize}").new(token, get_key)
     @check.check_decode
   end
 
   def get_key
-    #key = HMAC_KEY
     if @algorithm == 'HS256'
-      return key = 'my$ecretK3y'
+      return key = HMAC_KEY#'my$ecretK3y'
     elsif @algorithm == 'RS256'
       return key = @rsa_public
     end
@@ -60,12 +62,8 @@ class MyRackMiddleware
     @env['HTTP_AUTHORIZATION']
   end
 
-  def check_status?
-    check_token?
-  end
-
   def set_status
-    check_status?() ? 200 : 401
+    check_token?() ? 200 : 401
   end
 
   def token
@@ -74,13 +72,18 @@ class MyRackMiddleware
   end
 
   def set_algorithm
-    #@algorithm = nil
+    @algorithm = nil
     @algorithm ||= get_algorithm || 'RS256'
   end
 
   def get_algorithm
     tm = token.to_s.split('.')
     alg = JSON.parse(Base64.decode64(tm[0].tr('-_', '+/')))['alg']
+  end
+
+  def get_payload
+    tm = token.to_s.split('.')
+    payload = JSON.parse(Base64.decode64(tm[1].tr('-_', '+/')))
   end
 #--------------------------------------------------------------------------
   def gen_rs256_keys
