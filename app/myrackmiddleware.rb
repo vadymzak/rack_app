@@ -18,9 +18,7 @@ class MyRackMiddleware
     request(env)
     status, headers, body = @appl.call(env) # we now call the inner application
     status = set_status
-    @append_h = " "
-    @append_s = set_body(status)
-    [status, headers , body << @append_s.to_s]
+    set_response(status)
   end
 
   private
@@ -34,11 +32,11 @@ class MyRackMiddleware
     @bearer_token ||= authorization_header || @request.GET['token']
   end
 
-  def set_body(status)
+  def set_response(status)
     if status == 200
-      return @check.decode
+      response_rack(status, get_payload.to_s)
     else
-      return "Token not valid"
+      response_rack(status, "Token not valid")
     end
   end
 
@@ -79,6 +77,13 @@ class MyRackMiddleware
   def get_algorithm
     tm = token.to_s.split('.')
     alg = JSON.parse(Base64.decode64(tm[0].tr('-_', '+/')))['alg']
+  end
+
+  def response_rack(status, header)
+    resp = Rack::Response.new
+    resp.status = status
+    resp.set_header("X-Auth-User", header)
+    resp.finish
   end
 
   def get_payload
