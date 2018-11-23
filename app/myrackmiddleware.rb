@@ -10,7 +10,7 @@ class MyRackMiddleware
     @token
     @algorithm
     gen_rs256_keys
-    gen_token_rs256
+    p gen_token_rs256
   end
 
   def call(env)
@@ -74,14 +74,15 @@ class MyRackMiddleware
   end
 
   def set_algorithm
-    @algorithm = nil
-    @algorithm ||= algorithm_header || 'HS256'
+    #@algorithm = nil
+    @algorithm ||= get_algorithm || 'RS256'
   end
 
-  def algorithm_header
-    @env['HTTP_ALGORITHM']
+  def get_algorithm
+    tm = token.to_s.split('.')
+    alg = JSON.parse(Base64.decode64(tm[0].tr('-_', '+/')))['alg']
   end
-
+#--------------------------------------------------------------------------
   def gen_rs256_keys
     @rsa_private = OpenSSL::PKey::RSA.generate 2048
     @rsa_public = @rsa_private.public_key
