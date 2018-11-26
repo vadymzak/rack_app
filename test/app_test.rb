@@ -9,6 +9,8 @@ require "rack/test"
 class HomepageTest < Test::Unit::TestCase
   include Rack::Test::Methods
 
+  HMAC_KEY = "#{ENV["HMAC_KEY"]}"
+
   def app
     MyRackMiddleware.new(MyApp.new)
   end
@@ -17,7 +19,7 @@ class HomepageTest < Test::Unit::TestCase
     hmac_key = "#{ENV["HMAC_KEY"]}"
     assert_equal hmac_key, "my$ecretK3y"
   end
-  
+
   def test_status_401_with_without_token
     get "/"
 
@@ -30,20 +32,18 @@ class HomepageTest < Test::Unit::TestCase
     assert_equal last_response.status, 401
   end
 
-  def test_status_200_with_valid_token
-    hmac_secret = 'my$ecretK3y'
+  def test_status_200_with_hs256_valid_token_in_params
     payload = { data: 'test' }
-    @valid = JWT.encode payload, hmac_secret, 'HS256'
+    @valid = JWT.encode payload, HMAC_KEY, 'HS256'
 
     get "/?token=Bearer #{@valid}"
 
     assert_equal last_response.status, 200
   end
 
-  def test_status_200_with_valid_token_in_header
-    hmac_secret = 'my$ecretK3y'
+  def test_status_200_with_hs256_valid_token_in_header
     payload = { data: 'test' }
-    @valid = JWT.encode payload, hmac_secret, 'HS256'
+    @valid = JWT.encode payload, HMAC_KEY, 'HS256'
 
     header 'AUTHORIZATION', "Bearer #{@valid}"
     get "/"
