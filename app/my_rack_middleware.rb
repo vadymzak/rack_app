@@ -8,7 +8,7 @@ class MyRackMiddleware
   def initialize(appl)
     @appl = appl
     gen_rs256_keys
-    gen_token_rs256
+    p gen_token_rs256
   end
 
   def call(env)
@@ -47,9 +47,9 @@ class MyRackMiddleware
 
   def get_key
     if @algorithm == 'HS256'
-      return key = HMAC_KEY#'my$ecretK3y'
+      return HMAC_KEY#'my$ecretK3y'
     elsif @algorithm == 'RS256'
-      return key = @rsa_public
+      return @rsa_public
     end
   end
 
