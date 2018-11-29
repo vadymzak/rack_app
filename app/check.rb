@@ -5,7 +5,6 @@ require 'jwt'
     def initialize(token, key)
       @token = token
       @key = key
-      @decode
     end
 
 end

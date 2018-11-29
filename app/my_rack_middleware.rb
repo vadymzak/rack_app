@@ -3,12 +3,10 @@ require 'pry'
 class MyRackMiddleware
   attr_reader :request
 
-  HMAC_KEY = "#{ENV["HMAC_KEY"]}"
+  HMAC_KEY = ENV["HMAC_KEY"]
 
   def initialize(appl)
     @appl = appl
-    @token
-    @algorithm
     gen_rs256_keys
     gen_token_rs256
   end
@@ -16,9 +14,8 @@ class MyRackMiddleware
   def call(env)
     @env = env
     request(env)
-    status, headers, body = @appl.call(env) # we now call the inner application
-    status = set_status
-    set_response(status)
+    status, headers, body = @appl.call(env)
+    set_response(set_status)
   end
 
   private
@@ -29,7 +26,7 @@ class MyRackMiddleware
 
   def bearer_token
     @bearer_token = nil
-    @bearer_token ||= authorization_header || @request.GET['token']
+    @bearer_token = authorization_header || @request.GET['token']
   end
 
   def set_response(status)
@@ -71,7 +68,7 @@ class MyRackMiddleware
 
   def set_algorithm
     @algorithm = nil
-    @algorithm ||= get_algorithm || 'RS256'
+    @algorithm = get_algorithm || 'RS256'
   end
 
   def get_algorithm

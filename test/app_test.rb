@@ -1,5 +1,5 @@
 require_relative "../app/my_app"
-require_relative "../app/myrackmiddleware"
+require_relative "../app/my_rack_middleware"
 require_relative "../app/algorithm/hs256"
 require 'pry'
 
@@ -9,7 +9,7 @@ require "rack/test"
 class HomepageTest < Test::Unit::TestCase
   include Rack::Test::Methods
 
-  HMAC_KEY = "#{ENV["HMAC_KEY"]}"
+  HMAC_KEY = ENV["HMAC_KEY"]
 
   def app
     MyRackMiddleware.new(MyApp.new)
