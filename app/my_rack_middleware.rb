@@ -38,9 +38,7 @@ class MyRackMiddleware
   end
 
   def check_token?
-    if token == nil
-      return false
-    end
+    return false if token.nil?
     @check = Object.const_get("Algorithm::#{set_algorithm.capitalize}").new(token, get_key)
     @check.check_decode
   end
